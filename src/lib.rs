@@ -21,9 +21,8 @@ extern {
 }
 
 #[wasm_bindgen]
-pub fn initEncode(data: &str) -> *mut Encoder {
-    let buf = data.as_bytes().to_vec();
-    Box::into_raw(Box::new(Encoder::new(buf, 64, EncoderType::Random)))
+pub fn initEncode(data: Vec<u8>) -> *mut Encoder {
+    Box::into_raw(Box::new(Encoder::new(data, 64, EncoderType::Random)))
 }
 
 #[wasm_bindgen]
