@@ -1,0 +1,15 @@
+{
+  "name": "@yimiaoxiehou/fountain-wasm",
+  "type": "module",
+  "version": "1.0.1",
+  "files": [
+    "fountain_wasm_bg.wasm",
+    "fountain_wasm.js",
+    "fountain_wasm.d.ts"
+  ],
+  "main": "fountain_wasm.js",
+  "types": "fountain_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
