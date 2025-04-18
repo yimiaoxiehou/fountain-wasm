@@ -32,6 +32,7 @@ pub struct Encoder {
     encodertype: EncoderType,
 }
 
+
 #[derive(Debug)]
 pub enum DropType {
     Seeded(usize, usize),
@@ -40,33 +41,36 @@ pub enum DropType {
 
 impl DropType {
     pub fn serialize(&self) -> Vec<u8> {
-        let mut buf = Vec::new();
+        let mut buf = Vec::new();  // 创建空缓冲区用于存储序列化数据
         match self {
             DropType::Seeded(seed, degree) => {
-                buf.push(0); // 类型标记
-                buf.extend_from_slice(&seed.to_be_bytes());
-                buf.extend_from_slice(&degree.to_be_bytes());
+                // 对于Seeded类型：
+                buf.push(0); // 类型标记(0表示Seeded类型)
+                buf.extend_from_slice(&seed.to_be_bytes()); // 将seed以大端字节序写入
+                buf.extend_from_slice(&degree.to_be_bytes()); // 将degree以大端字节序写入
             }
             DropType::Edges(edges) => {
-                buf.push(1); // 类型标记
-                buf.extend_from_slice(&(edges.len() as u32).to_be_bytes());
+                // 对于Edges类型：
+                buf.push(1); // 类型标记(1表示Edges类型)
+                buf.extend_from_slice(&(edges.len() as u32).to_be_bytes()); // 先写入edges数组长度
                 for &edge in edges {
-                    buf.extend_from_slice(&edge.to_be_bytes());
+                    buf.extend_from_slice(&edge.to_be_bytes()); // 逐个写入edge值
                 }
             }
         }
-        buf
+        buf  // 返回序列化后的字节数组
     }
 
-    pub fn deserialize(data: &[u8]) -> Option<Self> {
+    pub fn deserialize(data: Vec<u8>) -> Option<Self> {
         if data.is_empty() {
             return None;
         }
         match data[0] {
             0 => { // Seeded类型
-                if data.len() < 17 { return None; }
-                let seed = usize::from_be_bytes(data[1..9].try_into().ok()?);
-                let degree = usize::from_be_bytes(data[9..17].try_into().ok()?);
+                if data.len() < 9 { return None; }
+                // WASM环境下改为读取4字节u32然后转为usize
+                let seed = u32::from_be_bytes(data[1..5].try_into().ok()?) as usize;
+                let degree = u32::from_be_bytes(data[5..9].try_into().ok()?) as usize;
                 Some(DropType::Seeded(seed, degree))
             }
             1 => { // Edges类型
@@ -75,9 +79,9 @@ impl DropType {
                 let mut edges = Vec::with_capacity(count);
                 let mut pos = 5;
                 for _ in 0..count {
-                    if pos + 8 > data.len() { return None; }
-                    edges.push(usize::from_be_bytes(data[pos..pos+8].try_into().ok()?));
-                    pos += 8;
+                    if pos + 4 > data.len() { return None; } // 改为4字节
+                    edges.push(u32::from_be_bytes(data[pos..pos+4].try_into().ok()?) as usize);
+                    pos += 4; // 每个edge改为4字节
                 }
                 Some(DropType::Edges(edges))
             }

@@ -1,6 +1,6 @@
 [package]
 name = "fountain-wasm"
-version = "0.0.2"
+version = "1.0.1"
 
 [lib]
 crate-type = ["cdylib"]
@@ -10,6 +10,10 @@ wasm-bindgen = "0.2.100"
 web-sys = "0.3.77"
 rand = "0.8.5"  # 更新到最新稳定版
 getrandom = { version = "0.2.15", features = ["js"] }
+serde = { version = "1.0.204", features = ["derive"] }
+serde-wasm-bindgen = "0.6.5"
+console_error_panic_hook = "0.1.7"
+serde-binary = "0.5.0"
 
 [target.wasm32-unknown-unknown]
 rustflags = ['--cfg', 'getrandom_backend="wasm_js"']
